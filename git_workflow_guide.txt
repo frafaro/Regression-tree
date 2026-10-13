@@ -1,0 +1,40 @@
+Connecting Rstudio and Github
+
+\- Create a new repo on GitHub and copy the URL
+
+\- Open the RStudio project I want to upload and open the terminal
+
+\- git status (to check if Git is active)
+
+\- git init -b main (to initialize Git locally, only if git status returns "fatal: not a git repository")
+
+\- Create a .gitignore file for all the files you don't want to upload
+
+\- git add . (puts files in staging)
+
+\- git status again (to check which files are in staging, to see if you forgot anything in .gitignore)
+
+\- git commit -m "message" (prepares the version to push along with a message)
+
+\- git remote add origin https://... (paste the repo URL to connect it to GitHub, you only do this once, the first time)
+
+\- git remote -v (to check that the link is correct, verify that it shows both fetch and push)
+
+\- git push -u origin main (pushes everything to GitHub)
+
+For subsequent changes:
+
+Once you've modified one or more files, simply run:
+
+\- git add .\
+- git status (if you want to see exactly what is going to be pushed)
+
+\- git commit -m "message"
+
+\- git push
+
+To remove unwanted files:
+
+\- git rm --cached file_name.R (for individual files)
+
+\- git rm -r --cached folder_name (for an entire folder)

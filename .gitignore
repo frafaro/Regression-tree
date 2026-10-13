@@ -1,0 +1,31 @@
+# File di sistema e di sessione R
+.DS_Store
+.RData
+.Rhistory
+.Rproj.user/
+
+# Script R
+27_02_2023.R
+27_02_2023_GGPLOT.R
+ES_ESAME.R
+ES_PCA.R
+Eercitazione_Alberi.R
+Es21_02_2023.R
+Es2_28_02_2023.R
+EsCorretta21_02_2023.R
+PCA.13_03_2023.R
+PCA_BA.R
+PCA_titoli.R
+esercitazione21_02_2023.R
+ggplot2.R
+tree.R
+tree_finance.R
+
+# Immagini e PDF
+PCAsystem.png
+corrPCVAR.png
+plot_azioni.pdf
+
+# Cartelle
+data/
+esame/

@@ -1,0 +1,233 @@
+# caricare tidyverse
+
+#install.packages("tidyverse")
+library(tidyverse)
+#install.packages("nycflights13")
+library(nycflights13)
+
+# Carichiamo i dati
+data("flights")
+flights # equivalente a print(flights)
+class(flights)
+
+# trasformiamolo in data.frame
+flight_dataframe <- as.data.frame(flights)
+class(flight_dataframe)
+flight_dataframe
+str(flights)
+# opzioni per visualizzare il tibble
+print(flights, n = 20) # vecchio modo
+flights %>% # usando la pipe #pipe si fa con comand+maisc+M
+  print(n = 20)
+
+# vogliamo solo due righe e tutte le colonne
+flights %>% 
+  print(n = 2, width = Inf)
+
+#####Filtro dataset ###########
+
+# selezionare solo i voli partiti il primo gennaio
+
+flights_1_1 <- flights %>% 
+  filter(month == 1, day == 1)
+
+# selezionare i voli partiti il 1 e 5 gennaio
+
+
+flights %>% 
+  filter(month == 1, day == 1 | day == 5)
+
+flights %>% 
+  filter(month == 1, day %in% c(1,5))
+
+# voli con un ritardo all'arrivo maggiore di 120 minuti
+
+flights %>% 
+  filter(arr_delay > 120)
+
+#########Salviamo il dataset nuovo###########
+
+write_csv2(flights_1_1, file = "data/voli1gennaio.csv") #lo salviamo nella cartella dati
+
+
+######## Ordinamento dataset##########
+
+# ordinare il dataset rispetto al ritardo all'arrivo (decrescente)
+flights %>% 
+  arrange(desc(arr_delay))
+  
+# ordinare in maniera decrescente sia rispetto al mese che al ritardo
+flights %>% 
+  arrange(desc(month), desc(arr_delay))
+
+######## Selezione variabili ####################
+
+# selezioniamo time_hour, dest, distance
+
+flights %>% 
+  select(time_hour, dest, distance)
+
+# se volessimo solo cambiare l'ordine
+
+flights %>% 
+  select(time_hour, dest, distance, everything())
+
+#########Creazione nuove variabili#######################################
+
+# creazione "guadagno" come differenza tra dep_delay e arr_delay
+
+flights %>% 
+  mutate(guadagno = dep_delay - arr_delay)
+
+# creazione variabile nuova eliminando le vecchie
+
+flights %>% 
+  transmute(guadagno = dep_delay - arr_delay)
+
+
+####Sintesi variabili###################
+
+# calcolare la distanza media dei voli e ritardo massimo
+
+flights %>% 
+  summarise(dist_media = mean(distance),     #si da un nome alla variabile e poi si da la funzione
+            rit_max = max(arr_delay))
+
+flights %>% 
+  summarise(dist_media = mean(distance, na.rm = T), 
+            rit_max = max(arr_delay, na.rm = T))
+
+# stesse sintesi per ogni mese
+
+flights %>% 
+  group_by(month) %>% 
+  summarise(dist_media = mean(distance, na.rm = T), 
+            rit_max = max(arr_delay, na.rm = T))
+
+####combinare più istruzioni############################
+
+# selezionare il mese di gennaio e calcolare la distanza media e il ritardo massimo rispetto ai giorni
+
+flights %>% 
+  filter(month == 1) %>% 
+  group_by(day) %>% 
+  summarise(dist_media = mean(distance, na.rm = T), 
+            rit_max = max(arr_delay, na.rm = T))
+
+
+#### conteggio frequenze ####
+
+flights %>% 
+  group_by(year, month, day) %>% 
+  summarise(rit_max= max(arr_delay, na.rm = T), #ritardo max senza contare NA
+            n_NA= sum(is.na(arr_delay)),        #numero di NA usiamo la funz sum
+            n= n()) %>%                         #numero osservazione tot
+  mutate(freq_NA= n_NA/n*100) %>%               #creo nuova variabile con proporzione di NA
+  filter(freq_NA > 10)                          #tengo le oss maggiori del 10%
+
+#### riordinare dataset ####
+
+table<- tibble(Paese = c("Afg", "Bra", "Chi"),
+               "1999" = c(745, 37737, 212258),
+               "2000" = c(2666, 80488, 213766))
+table
+
+#riordiniamo facendo in modo di inserire una variabile tempo uso funz pivot_longer
+
+table %>% 
+  pivot_longer(c("1999", "2000"), names_to = "Anno",  #nuova colonna anno con 1999 e 2000
+               values_to = "Casi")                    #nuova colonna Casi con i valori associati ad ogni paese per anno
+
+#riscriviamo come
+
+table %>% 
+  pivot_longer(-Paese, names_to = "Anno", #togliamo la variabile che vogliamo lasciare alla fine
+               values_to = "Casi")        #per quando hai tanti dati
+
+## altro caso con pivot_wider
+
+table_2<-tibble(c(rep("AFG",4), rep("BRA", 4), rep("CHI", 4)),
+                Anno=  c(1999, 1999, 2000, 2000,
+                         1999, 1999, 2000, 2000,
+                         1999, 1999, 2000, 2000),
+                Tipo= c("Casi", "pop", "Casi", "pop",
+                        "Casi", "pop", "Casi", "pop",
+                        "Casi", "pop", "Casi", "pop"),
+                Conteggio= c(745, 19987071, 2666, 20595360,            #la var conteggio ha due tipo di dati differenti
+                             37737, 172006362, 80488, 17454898,
+                             212258, 1272915272, 213766, 1280428583))
+
+table_2
+
+table_2 %>%                                                  #riordino in modo che casi e pop siano due nuove variabili
+  pivot_wider(names_from = Tipo, values_from = Conteggio)
+
+#### Chiavi ####
+
+#per mettere in relazione due dataset che condividono una variabile
+#uno di questi deve avere la chiave primaria ovvero che identifica in maniera univoca una riga
+#nell'altro deve essere chiave esterna ovvero può anche identificare più righe (in poche parole quel valore può ripetersi)
+
+inner_join() #solo oss in comune
+full_join()  #tutte le oss mettendo NA dove non ci sono
+left_join()
+right_join()
+
+flights
+data("planes")
+planes
+
+#voglio unirli con la variabile tail num
+# tail num è chiave primaria in planes
+
+planes %>% 
+  count(tailnum)
+#oppure
+
+planes %>% 
+  group_by(tailnum) %>% 
+  summarise(n=n()) %>% 
+  filter(n>1).  #visto che è vuoto sappiamo che tailnum non si ripete e quindi e chiave primaria
+
+#facciamo il join
+
+flights_with_plane<-flights %>% 
+  left_join(planes, by= ("tailnum"="tailnum")) #nel caso le chiavi avessero nomi diversi tra dataset
+  
+  
+#### apllicazione in SQL ####
+
+# install.packages("RSQLite")
+
+library(dbplyr)  
+library(RSQLite)
+library(DBI)
+library(nycflights13)
+data("flights")
+
+connected_DB<- dbConnect(SQLite(), ":memory:") #crea sessione SQL su R
+flights_DB<- copy_to(connected_DB, nycflights13::flights) #associare alla sessione SQL i dati che vogliamo
+
+# es1 selezionare colonne relative al ritardo
+
+flights_DB %>% 
+  select(contains("delay")) %>% 
+  show_query() #come source dice sql e ci mostra anche il codice che avremmo usato su SQL
+
+#es2 selezioniamo distanza e tempo di volo e calcoliamo velocità media
+
+flights_DB %>% 
+  select(distance, air_time) %>% 
+  mutate(speed= distance/(air_time/60)) %>% 
+  show_query()
+
+#es3 ritardo medio giornaliero
+
+flights_DB %>% 
+  group_by(month, day) %>% 
+  summarise(delay=mean(arr_delay, na.rm = T)) %>% 
+  show_query()
+
+
+
+

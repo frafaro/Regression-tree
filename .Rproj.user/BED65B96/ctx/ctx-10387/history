@@ -1,0 +1,140 @@
+# caricare tidyverse
+install.packages("tidyverse")
+library(tidyverse)
+library(nycflights13)
+# Carichiamo i dati
+data("flights")
+install.packages("nycflights13")
+library(nycflights13)
+# Carichiamo i dati
+data("flights")
+flights # equivalente a print(flights)
+class(flights)
+# trasformiamolo in data.frame
+flight_dataframe <- as.data.frame(flights)
+class(flight_dataframe)
+flight_dataframe
+# opzioni per visualizzare il tibble
+print(flights, n = 20) # vecchio modo
+flights %>% # usando la pipe
+print(n = 20)
+# vogliamo solo due righe e tutte le colonne
+flights %>%
+print(n = 2, width = Inf)
+flights_1_1 <- flights %>%
+filter(month == 1, day == 1)
+flights %>%
+filter(month == 1, day == 1 | day == 5)
+flights %>%
+filter(month == 1, day %in% c(1,5))
+flights %>%
+filter(arr_delay > 120)
+write_csv2(flights_1_1, file = "data/voli1gennaio.csv")
+flights %>%
+filter(month == 1) %>%
+group_by(day) %>%
+summarise(dist_media = mean(distance, na.rm = T),
+rit_max = max(arr_delay, na.rm = T))
+#install.packages("tidyverse")
+library(tidyverse)
+flights %>%
+group_by(year, month, day) %>%
+summarise(rit_max= max(arr_delay, na.rm = T), #ritardo max senza contare NA
+n_NA= sum(is.na(arr_delay)),
+n= n())
+flights %>%
+group_by(year, month, day) %>%
+summarise(rit_max= max(arr_delay, na.rm = T), #ritardo max senza contare NA
+n_NA= sum(is.na(arr_delay)),        #numero di NA usiamo la funz sum
+n= n()) %>%
+mutate(freq_NA= n_NA/n*100) %>%
+filter(freq_NA > 10)
+table<- tibble(Paese = c("Afg", "Bra", "Chi"),
+"1999" = c(745, 37737, 212258),
+"2000" = c(2666, 80488, 213766))
+table
+table %>%
+pivot_longer(c("1999", "2000"), names_to = "Anno",
+values_to = "Casi")
+table %>%
+pivot_longer(-Paese, names_to = "Anno",
+values_to = "Casi")
+table_2<-tibble(c(rep("AFG",3), rep("BRA", 4), rep("CHI", 4)),
+Anno=  c(1999, 1999, 2000, 2000,
+1999, 1999, 2000, 2000,
+1999, 1999, 2000, 2000),
+Tipo= c("Casi", "pop", "Casi", "pop",
+"Casi", "pop", "Casi", "pop",
+"Casi", "pop", "Casi", "pop"),
+Conteggio= c(745, 19987071, 2666, 20595360,
+37737, 172006362, 80488, 17454898,
+212258, 1272915272, 213766, 1280428583))
+table_2<-tibble(c(rep("AFG",4), rep("BRA", 4), rep("CHI", 4)),
+Anno=  c(1999, 1999, 2000, 2000,
+1999, 1999, 2000, 2000,
+1999, 1999, 2000, 2000),
+Tipo= c("Casi", "pop", "Casi", "pop",
+"Casi", "pop", "Casi", "pop",
+"Casi", "pop", "Casi", "pop"),
+Conteggio= c(745, 19987071, 2666, 20595360,
+37737, 172006362, 80488, 17454898,
+212258, 1272915272, 213766, 1280428583))
+table_2
+table_2 %>%
+pivot_wider(names_from = Tipo, values_from = Conteggio)
+View(table)
+data("planes")
+#install.packages("nycflights13")
+library(nycflights13)
+data("planes")
+planes
+planes %>%
+count(tailnum)
+planes %>%
+group_by(tailnum) %>%
+summarise(n=n()) %>%
+filter(n>1)
+flights %>%
+left_join(planes, by= "tailnum")
+flights_with_plane<-flights %>%
+left_join(planes, by= "tailnum")
+View(flights_with_plane)
+flights_with_plane<-flights %>%
+left_join(planes, by= ("tailnum"="tailnum"))
+View(planes)
+install.packages("RSQLite")
+library(dbplyr)
+library(RSQLite)
+library(DBI)
+library(nycflights13)
+data("flights")
+connected_DB<- dbConnect(SQLite(), ":memory:") #connettere dati da R a SQL
+View(connected_DB)
+flights<- copy_to(connected_DB, flights)
+#install.packages("tidyverse")
+library(tidyverse)
+flights<- copy_to(connected_DB, flights)
+flights<- copy_to(connected_DB, nycflights13::flights)
+View(flights)
+flights_DB<- copy_to(connected_DB, nycflights13::flights) #associare alla sessione SQL i dati che vogliamo
+flights_DB<- copy_to(connected_DB, nycflights13::flights) #associare alla sessione SQL i dati che vogliamo
+library(dbplyr)
+library(RSQLite)
+library(DBI)
+library(nycflights13)
+data("flights")
+connected_DB<- dbConnect(SQLite(), ":memory:") #crea sessione SQL su R
+flights_DB<- copy_to(connected_DB, nycflights13::flights)
+flights_DB %>%
+select(contains("delay"))
+flights_DB %>%
+select(contains("delay")) %>%
+show_query() #come source dice sql
+flights_DB %>%
+select(distance, air_time) %>%
+mutate(speed= distance/(air_time/60)) %>%
+show_query()
+flights_DB %>%
+group_by(month, day) %>%
+summarise(delay=mean(arr_delay, na.rm = T)) %>%
+show_query()
